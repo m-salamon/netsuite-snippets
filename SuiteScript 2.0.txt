@@ -1,0 +1,14 @@
+var record, curecModule, currentRecord, search, runtime, xml, format, email, https;
+require(['N/record', 'N/currentRecord', 'N/search', 'N/runtime', 'N/xml', 'N/format', 'N/email', 'N/https'],
+function(r, c, s, u, x, f, e, h) {
+record = r;
+email = e;
+currentRecord = c.get();
+search = s;
+runtime = u;
+xml = x;
+format = f;
+curecModule = c;
+          https =h;
+console.log("2.0 Modules Loaded!");
+})

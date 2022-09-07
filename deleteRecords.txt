@@ -1,0 +1,34 @@
+require(['N/record', 'N/search'],
+  function (record, search) {
+
+    function deleteRecords() {
+
+      var recordToDelete = []; //Records internalid
+      var recordType = ''; //Record Type
+      var searchId = '' //Or search internalid
+
+      var searchObj;
+      if (recordToDelete.length) {
+        searchObj = recordToDelete.map(function (res) {return {id: res, recordType: recordType};});
+      } else {
+        searchObj = search.load(searchId);
+        searchObj = searchObj.run().getRange(0,1000).map(function (res) {return {id: res.id, recordType: res.recordType}});
+      }
+
+      if (!searchObj) {
+         console.log("Search Id or Record Id not provided");
+      }
+
+      searchObj.map(function (contextValue) {
+        var recordType = contextValue.recordType.trim();
+        var id = contextValue.id.toString().trim();
+        var deletedRecord = record.delete({
+          type: recordType,
+          id: id
+        });
+        console.log('deleted record', deletedRecord)
+      })
+    }
+
+    deleteRecords()
+})

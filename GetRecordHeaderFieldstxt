@@ -1,0 +1,15 @@
+function getValues(){
+        id = currentRecord.id
+        type = currentRecord.type
+        rec = record.load({
+            type: type,
+            id: id
+        })
+        fields = rec.getFields()
+        // console.log(fields)
+        var returnObj = {} 
+        var results = fields.map(function(field){
+            var value = rec.getValue(field)
+            returnObj[field] = value
+        })
+    }

@@ -1,0 +1,107 @@
+
+
+(function () {
+  var head = document.head;
+
+  var a = document.createElement('script');
+  a.src = 'https://cdnjs.cloudflare.com/ajax/libs/x2js/1.2.0/xml2json.min.js';
+  head.appendChild(a);
+
+  var b = document.createElement('script');
+  b.src = 'https://cdn.jsdelivr.net/npm/json-formatter-js@2.3.4/dist/json-formatter.umd.min.js';
+  head.appendChild(b);
+
+  var c = document.createElement('script');
+  c.src = 'https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.20/lodash.min.js';
+  head.appendChild(c);
+
+  var link = document.createElement('link');
+  link.href = 'https://cdn.jsdelivr.net/npm/json-formatter-js@2.3.4/dist/json-formatter.css';
+  head.appendChild(link);
+
+})();
+
+var starter = (function () {
+  try {
+    if (typeof nlapiGetRecordType === 'undefined') {
+      alert('error', 'Are you on a NetSuite page?');
+      return;
+    }
+
+    let id = nlapiGetRecordId();
+    let type = nlapiGetRecordType();
+    let url;
+    let payload;
+
+    if (type && id) {
+      url = '/app/common/scripting/nlapihandler.nl';
+      payload = `<nlapiRequest type="nlapiLoadRecord" id="${id}" recordType="${type}"/>`; // eslint-disable-line max-len
+    } else {
+      url = window.location + '&xml=T';
+    }
+
+    var response = nlapiRequestURL(url, payload, null)
+    return response.getBody();
+
+  } catch (error) {
+    alert('error', error.toString());
+  }
+})()
+
+function formatRecord(object) {
+  let baseRecord;
+
+  if (!object) {
+    return null;
+  } else if (object.hasOwnProperty('nlapiResponse')) {
+    baseRecord = object.nlapiResponse.record;
+  } else if (object.hasOwnProperty('nsResponse')) {
+    baseRecord = object.nsResponse.record;
+  } else {
+    return null;
+  }
+
+  if (!baseRecord) {
+    return null;
+  }
+
+  return _.transform(
+    baseRecord,
+    (memo, value, key) => {
+      switch (key) {
+        case 'machine':
+          if (!_.isArray(value)) {
+            memo.lineFields[value._name] = value.line;
+          } else {
+            _.forEach(value, (sublist) => {
+              memo.lineFields[sublist._name] = sublist.line;
+            });
+          }
+          break;
+
+        case '_recordType':
+          memo.recordType = value;
+          break;
+
+        case '_id':
+          memo.id = value;
+          break;
+
+        case '_fields':
+          break;
+
+        default:
+          memo.bodyFields[key] = value;
+      }
+    },
+    { recordType: null, id: null, bodyFields: {}, lineFields: {} }
+  );
+}
+
+setTimeout(function(){
+   var recordJSON = new X2JS().xml_str2json(starter);
+   var myJSON = formatRecord(recordJSON);
+   console.log('Field Records', myJSON)
+}, 5000);
+
+
